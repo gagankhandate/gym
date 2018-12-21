@@ -1,4 +1,5 @@
 import gym
+import numpy as np
 from collections import OrderedDict
 
 class Dict(gym.Space):
@@ -40,6 +41,16 @@ class Dict(gym.Space):
             spaces = OrderedDict(spaces)
         self.spaces = spaces
         gym.Space.__init__(self, None, None) # None for shape and dtype, since it'll require special handling
+
+        # very bad hack for GoalEnv, not for Atari
+        size = 0
+        for key in ['observation', 'achieved_goal']:
+            if key in self.spaces.keys():
+                shape = self.spaces[key].shape
+                size += np.prod(shape)
+        self.shape = (size, )
+        self.dtype = self.spaces['observation'].dtype
+
 
     def sample(self):
         return OrderedDict([(k, space.sample()) for k, space in self.spaces.items()])
